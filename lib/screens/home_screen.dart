@@ -117,7 +117,7 @@ class HomeScreen extends StatelessWidget {
                   ),
                   SizedBox(height: 4),
                   Text(
-                    'לע"נ קלמן קלונימוס בן אברהם חיים ז"ל',
+                    'לע"נ קלמן קלונימוס בן חנוך ז"ל',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontFamily: 'David',
