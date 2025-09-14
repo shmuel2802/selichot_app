@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
+import 'dart:convert';
 import '../services/selichot_service.dart';
 
 class TextScreen extends StatefulWidget {
@@ -14,10 +15,15 @@ class TextScreen extends StatefulWidget {
 
 
 class _TextScreenState extends State<TextScreen> {
+  // משתנה לשמירת טקסט התרת נדרים
+  List<String>? releasingVowsText;
+  // הצגת התרת נדרים תמיד
+  // bool showReleasingVows = false;
   // משתנים
   Map<String, List<String>>? selichotDays;
   Map<String, String>? dayKeyToHebrew;
   String? selectedDay;
+  // הסרת אפשרות התרת נדרים
   bool isLoading = true;
   bool isError = false;
   double fontSize = 22;
@@ -55,6 +61,10 @@ class _TextScreenState extends State<TextScreen> {
       dayKeyToHebrew = await SelichotService.getDayKeyToHebrewName(key);
       selectedDay = selichotDays?.keys.first;
       dayTitle = selectedDay ?? '';
+      // אם יש התרת נדרים, הוסף אותה לרשימת הימים
+      await loadReleasingVows(key);
+      // טען את התרת נדרים מהקובץ החדש
+      await loadReleasingVows(key);
     } catch (e) {
       isError = true;
     } finally {
@@ -64,11 +74,58 @@ class _TextScreenState extends State<TextScreen> {
     }
   }
 
+  // טוען את התרת נדרים לפי נוסח
+  Future<void> loadReleasingVows(String nusachKey) async {
+    try {
+      final jsonStr = await DefaultAssetBundle.of(context).loadString('assets/selichot/releasingVows.json');
+      final data = json.decode(jsonStr);
+      if (data is List) {
+        final vows = data.firstWhere(
+          (e) => e['nusach'] == nusachKey,
+          orElse: () => null,
+        );
+        if (vows != null && vows['text'] is List) {
+          releasingVowsText = List<String>.from(vows['text']);
+        } else {
+          releasingVowsText = null;
+        }
+      } else {
+        releasingVowsText = null;
+      }
+    } catch (e) {
+      releasingVowsText = null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: const Color(0xFF8B6F43),
+          elevation: 0,
+          iconTheme: IconThemeData(color: Color(0xFFF5E7C2)),
+          title: Text(
+            nusachList.firstWhere((n) => n['key'] == (selectedNusachKey ?? widget.nusachKey))['name'] ?? '',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: 'David',
+              fontWeight: FontWeight.bold,
+              fontSize: 22,
+              color: Color(0xFFF5E7C2),
+              letterSpacing: 1.1,
+              shadows: [
+                Shadow(
+                  blurRadius: 6,
+                  color: Colors.brown.shade400,
+                  offset: Offset(1, 2),
+                ),
+              ],
+            ),
+          ),
+          centerTitle: true,
+        ),
         drawer: Drawer(
           child: Container(
             decoration: BoxDecoration(
@@ -123,7 +180,7 @@ class _TextScreenState extends State<TextScreen> {
                   ),
                 ),
                 SizedBox(height: 24),
-                if (selichotDays != null && selichotDays!.isNotEmpty)
+                if (selichotDays != null && selichotDays!.isNotEmpty && selectedNusachKey != 'edot_mizrach')
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
@@ -203,75 +260,67 @@ class _TextScreenState extends State<TextScreen> {
                 : Container(
                     width: double.infinity,
                     color: Color(0xFFF9F3E6),
-                    child: CustomScrollView(
-                      slivers: [
-                        SliverAppBar(
-                          pinned: true,
-                          backgroundColor: Color(0xFF5C3A1A),
-                          expandedHeight: 90,
-                          flexibleSpace: FlexibleSpaceBar(
-                            centerTitle: true,
-                            title: Text(
-                              // הצג את שם הנוסח בעברית בלבד
-                              nusachList.firstWhere((n) => n['key'] == (selectedNusachKey ?? widget.nusachKey))['name'] ?? '',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontFamily: 'David',
-                                fontWeight: FontWeight.bold,
-                                fontSize: 22,
-                                color: Color(0xFFF5E7C2),
-                                letterSpacing: 1.1,
-                                shadows: [
-                                  Shadow(
-                                    blurRadius: 6,
-                                    color: Colors.brown.shade400,
-                                    offset: Offset(1, 2),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                        SliverToBoxAdapter(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 18.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                if (selectedDay != null && (dayKeyToHebrew?[selectedDay] ?? '').isNotEmpty)
-                                  Padding(
-                                    padding: const EdgeInsets.only(bottom: 16.0),
-                                    child: Text(
-                                      dayKeyToHebrew![selectedDay!] ?? selectedDay!,
-                                      style: TextStyle(
-                                        fontFamily: 'David',
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 20,
-                                        color: Color(0xFF8B6F43),
+                    child: Scrollbar(
+                      thumbVisibility: true,
+                      trackVisibility: true,
+                      interactive: true,
+                      notificationPredicate: (notif) => notif.depth == 0,
+                      child: GestureDetector(
+                        onScaleUpdate: (details) {
+                          if (details.scale != 1.0) {
+                            setState(() {
+                              fontSize = (fontSize * details.scale).clamp(16.0, 60.0);
+                            });
+                          }
+                        },
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.vertical,
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              final horizontalPadding = constraints.maxWidth * 0.04;
+                              return Padding(
+                                padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    SizedBox(height: 18),
+                                    if (selectedDay != null && (dayKeyToHebrew?[selectedDay] ?? '').isNotEmpty)
+                                      Padding(
+                                        padding: const EdgeInsets.only(bottom: 16.0),
+                                        child: Text(
+                                          dayKeyToHebrew![selectedDay!] ?? selectedDay!,
+                                          style: TextStyle(
+                                            fontFamily: 'David',
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 20,
+                                            color: Color(0xFF8B6F43),
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
                                       ),
-                                      textAlign: TextAlign.center,
+                                    Html(
+                                      data: selichotDays![selectedDay]?.join('<br><br>') ?? '',
+                                      style: {
+                                        "body": Style(
+                                          fontSize: FontSize(fontSize),
+                                          fontFamily: 'David',
+                                          direction: TextDirection.rtl,
+                                          textAlign: TextAlign.center,
+                                          color: Color(0xFF4E3B1F),
+                                          backgroundColor: Color(0xFFF9F3E6),
+                                          padding: HtmlPaddings.zero,
+                                          margin: Margins.zero,
+                                        ),
+                                      },
                                     ),
-                                  ),
-                                Html(
-                                  data: selichotDays![selectedDay]?.join('<br><br>') ?? '',
-                                  style: {
-                                    "body": Style(
-                                      fontSize: FontSize(fontSize),
-                                      fontFamily: 'David',
-                                      direction: TextDirection.rtl,
-                                      textAlign: TextAlign.center,
-                                      color: Color(0xFF4E3B1F),
-                                      backgroundColor: Color(0xFFF9F3E6),
-                                      padding: HtmlPaddings.zero,
-                                      margin: Margins.zero,
-                                    ),
-                                  },
+                                    SizedBox(height: 24),
+                                  ],
                                 ),
-                              ],
-                            ),
+                              );
+                            },
                           ),
                         ),
-                      ],
+                      ),
                     ),
                   ),
         floatingActionButton: isError

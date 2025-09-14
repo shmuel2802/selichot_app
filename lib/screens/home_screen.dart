@@ -47,54 +47,100 @@ class HomeScreen extends StatelessWidget {
             ],
           ),
         ),
-        child: ListView.builder(
-          itemCount: nusachList.length,
-          padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
-          itemBuilder: (context, index) {
-            return Card(
-              color: Color(0xFFF9F3E6),
-              elevation: 6,
-              margin: const EdgeInsets.symmetric(vertical: 16, horizontal: 0),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(18),
-                side: BorderSide(color: Color(0xFF8B6F43), width: 2),
-              ),
-              child: ListTile(
-                contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 24),
-                title: Center(
-                  child: Text(
-                    nusachList[index]['name']!,
-                    textDirection: TextDirection.rtl,
-                    style: TextStyle(
-                      fontFamily: 'David',
-                      fontWeight: FontWeight.bold,
-                      fontSize: 24,
-                      color: Color(0xFF8B6F43),
-                      letterSpacing: 1.2,
-                      shadows: [
-                        Shadow(
-                          blurRadius: 3,
-                          color: Colors.brown.shade200,
-                          offset: Offset(1, 1),
-                        ),
-                      ],
+        child: Column(
+          children: [
+            Expanded(
+              child: ListView.builder(
+                itemCount: nusachList.length,
+                padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
+                itemBuilder: (context, index) {
+                  return Card(
+                    color: Color(0xFFF9F3E6),
+                    elevation: 6,
+                    margin: const EdgeInsets.symmetric(vertical: 16, horizontal: 0),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18),
+                      side: BorderSide(color: Color(0xFF8B6F43), width: 2),
                     ),
-                  ),
-                ),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => TextScreen(
-                        nusachName: nusachList[index]['name']!,
-                        nusachKey: nusachList[index]['key']!,
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 24),
+                      title: Center(
+                        child: Text(
+                          nusachList[index]['name']!,
+                          textDirection: TextDirection.rtl,
+                          style: TextStyle(
+                            fontFamily: 'David',
+                            fontWeight: FontWeight.bold,
+                            fontSize: 24,
+                            color: Color(0xFF8B6F43),
+                            letterSpacing: 1.2,
+                            shadows: [
+                              Shadow(
+                                blurRadius: 3,
+                                color: Colors.brown.shade200,
+                                offset: Offset(1, 1),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => TextScreen(
+                              nusachName: nusachList[index]['name']!,
+                              nusachKey: nusachList[index]['key']!,
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   );
                 },
               ),
-            );
-          },
+            ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 150.0, top: 8.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'לע"נ משה צבי בן חיים יוסף דוד ז"ל',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: 'David',
+                      fontSize: 18,
+                      color: Color(0xFF8B6F43),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    'לע"נ קלמן קלונימוס בן אברהם חיים ז"ל',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: 'David',
+                      fontSize: 18,
+                      color: Color(0xFF8B6F43),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    'לע"נ חיים בן סעיד חסן ז"ל',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: 'David',
+                      fontSize: 18,
+                      color: Color(0xFF8B6F43),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
