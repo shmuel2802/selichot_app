@@ -1,0 +1,27 @@
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "img/AppIcon.png"
+name: selichot
+description: אפליקציית סליחות עם בחירת נוסח ואופליין
+publish_to: "none"
+version: 1.0.0+1
+environment:
+  sdk: ">=2.17.0 <3.0.0"
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_html: ^3.0.0
+  http: ^0.13.6
+  shared_preferences: ^2.2.2
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_launcher_icons: ^0.13.1
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/selichot/ashkenaz.json
+    - assets/selichot/sefard.json
+    - assets/selichot/edot_mizrach.json
